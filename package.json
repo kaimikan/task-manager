@@ -1,0 +1,23 @@
+{
+  "name": "task-manager",
+  "version": "1.0.0",
+  "description": "An app with the purpose of managing tasks using NodeJS, MongoDB and others. Following Andrew Mead's Node.js course.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaimikan/task-manager.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kaimikan/task-manager/issues"
+  },
+  "homepage": "https://github.com/kaimikan/task-manager#readme",
+  "keywords": [],
+  "dependencies": {
+    "mongodb": "^4.5.0"
+  }
+}
