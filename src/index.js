@@ -22,6 +22,28 @@ app.post("/users", (req, res) => {
     });
 });
 
+app.get("/users", (req, res) => {
+  User.find({})
+    .then((users) => {
+      res.status(200).send(users);
+    })
+    .catch((error) => {
+      res.status(500).send();
+    });
+});
+
+app.get("/users/:id", (req, res) => {
+  // notice how findById auto converts to new Object(req.params.id)
+  User.findById(req.params.id)
+    .then((user) => {
+      if (user) return res.send(user);
+      return res.status(404).send();
+    })
+    .catch((error) => {
+      res.status(500).send();
+    });
+});
+
 app.post("/tasks", (req, res) => {
   console.log(req.body);
   const task = new Task(req.body);
@@ -32,6 +54,27 @@ app.post("/tasks", (req, res) => {
     })
     .catch((error) => {
       res.status(400).send(error);
+    });
+});
+
+app.get("/tasks", (req, res) => {
+  Task.find({})
+    .then((tasks) => {
+      res.status(200).send(tasks);
+    })
+    .catch((error) => {
+      res.status(500).send();
+    });
+});
+
+app.get("/tasks/:id", (req, res) => {
+  Task.findById(req.params.id)
+    .then((task) => {
+      if (task) return res.send(task);
+      return res.status(404).send();
+    })
+    .catch((error) => {
+      res.status(500).send();
     });
 });
 
