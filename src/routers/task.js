@@ -4,10 +4,34 @@ const auth = require("../middleware/auth");
 
 const router = new express.Router();
 
+// GET /tasks?completed=true
+// GET /tasks?limit=10&skip=10
+// GET /tasks?sortBy=createdAt_asc:completed_desc
 router.get("/tasks", auth, async (req, res) => {
+  const match = {};
+  if (req.query.completed) {
+    match.completed = req.query.completed === "true";
+  }
+
+  const sort = {};
+  if (req.query.sortBy) {
+    const parts = req.query.sortBy.split(":");
+    parts.forEach((part) => {
+      const partSplit = part.split("_");
+      sort[partSplit[0]] = partSplit[1] === "desc" ? -1 : 1;
+    });
+  }
   try {
-    const tasks = await Task.find({ creator: req.user._id }); // OR await req.user.populate('tasks')
-    res.status(200).send(tasks);
+    await req.user.populate({
+      path: "tasks",
+      match,
+      options: {
+        limit: parseInt(req.query.limit),
+        skip: parseInt(req.query.skip),
+        sort,
+      },
+    });
+    res.status(200).send(req.user.tasks);
   } catch (e) {
     res.status(500).send();
   }
