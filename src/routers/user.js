@@ -57,18 +57,7 @@ router.get("/users/me", auth, async (req, res) => {
   res.send(req.user);
 });
 
-router.get("/users/:id", async (req, res) => {
-  try {
-    // notice how findById auto converts to new Object(req.params.id)
-    const user = await User.findById(req.params.id);
-    if (user) return res.send(user);
-    return res.status(404).send();
-  } catch (e) {
-    res.status(500).send();
-  }
-});
-
-router.patch("/users/:id", async (req, res) => {
+router.patch("/users/me", auth, async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ["name", "email", "password", "age"];
 
@@ -83,29 +72,24 @@ router.patch("/users/:id", async (req, res) => {
   if (!isValidOperation) res.status(400).send({ error: "Invalid updates!" });
 
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body);
-
     // we do this to make sure out middleware runs since findByIdAndUpdate bypasses it
     updates.forEach((update) => {
       // we dont know exact value so instead of .name for example we use [update]
       // this is done to trigger middleware form the model, since pathing is more complex than the save
-      user[update] = req.body[update];
+      req.user[update] = req.body[update];
     });
-    await user.save();
+    await req.user.save();
 
-    if (user) return res.send(user);
-    return res.status(404).send();
+    return res.send(req.user);
   } catch (e) {
     res.status(500).send();
   }
 });
 
-router.delete("/users/:id", async (req, res) => {
+router.delete("/users/me", auth, async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-
-    if (user) return res.send(user);
-    return res.status(404).send();
+    await req.user.remove();
+    return res.send(req.user);
   } catch (e) {
     res.status(500).send();
   }

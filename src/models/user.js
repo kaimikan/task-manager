@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Task = require("./task");
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -49,6 +50,13 @@ const userSchema = new mongoose.Schema({
       },
     },
   ],
+});
+
+// linking tasks with users
+userSchema.virtual("tasks", {
+  ref: "Task",
+  localField: "_id",
+  foreignField: "creator",
 });
 
 // important for method name to be toJSON since we overwrite default befaviour
@@ -106,6 +114,15 @@ userSchema.pre("save", async function (next) {
   }
 
   // next is called when we're done, similar to done in jest testing
+  next();
+});
+
+// cascade delete tasks when user creator is removed
+userSchema.pre("remove", async function (next) {
+  const user = this;
+
+  await Task.deleteMany({ creator: user._id });
+
   next();
 });
 
