@@ -19,6 +19,7 @@
   "homepage": "https://github.com/kaimikan/task-manager#readme",
   "keywords": [],
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "express": "^4.17.3",
     "mongodb": "^4.5.0",
     "mongoose": "^6.2.10",

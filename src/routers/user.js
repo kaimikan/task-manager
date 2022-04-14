@@ -16,6 +16,18 @@ router.post("/users", async (req, res) => {
   }
 });
 
+router.post("/users/login", async (req, res) => {
+  try {
+    const user = await User.findByCredentials(
+      req.body.email,
+      req.body.password
+    );
+    res.send(user);
+  } catch (e) {
+    res.status(400).send();
+  }
+});
+
 router.get("/users", async (req, res) => {
   try {
     const users = await User.find({});
@@ -51,10 +63,16 @@ router.patch("/users/:id", async (req, res) => {
   if (!isValidOperation) res.status(400).send({ error: "Invalid updates!" });
 
   try {
-    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true,
+    const user = await User.findByIdAndUpdate(req.params.id, req.body);
+
+    // we do this to make sure out middleware runs since findByIdAndUpdate bypasses it
+    updates.forEach((update) => {
+      // we dont know exact value so instead of .name for example we use [update]
+      // this is done to trigger middleware form the model, since pathing is more complex than the save
+      user[update] = req.body[update];
     });
+    await user.save();
+
     if (user) return res.send(user);
     return res.status(404).send();
   } catch (e) {
@@ -70,17 +88,6 @@ router.delete("/users/:id", async (req, res) => {
     return res.status(404).send();
   } catch (e) {
     res.status(500).send();
-  }
-});
-
-router.post("/tasks", async (req, res) => {
-  console.log(req.body);
-  try {
-    const task = new Task(req.body);
-    await task.save();
-    res.status(201).send(task);
-  } catch (e) {
-    res.status(400).send(e);
   }
 });
 
