@@ -51,6 +51,19 @@ const userSchema = new mongoose.Schema({
   ],
 });
 
+// important for method name to be toJSON since we overwrite default befaviour
+// .toJSON gets called whenever an object is stringified which happens in res.send({ user, token });
+userSchema.methods.toJSON = function () {
+  const user = this;
+  const userObject = user.toObject();
+
+  // hiding private data by not passing it to client
+  delete userObject.password;
+  delete userObject.tokens;
+
+  return userObject;
+};
+
 // auth token generation
 // methods are available on user.
 userSchema.methods.generateAuthToken = async function () {
