@@ -2,6 +2,7 @@ const express = require("express");
 const User = require("../models/user");
 const auth = require("../middleware/auth");
 const multer = require("multer");
+const sharp = require("sharp");
 
 const router = new express.Router();
 
@@ -54,8 +55,8 @@ router.post("/users/logoutAll", auth, async (req, res) => {
   }
 });
 
+const storage = multer.memoryStorage();
 const upload = multer({
-  dest: "avatars",
   limits: {
     // 1MB
     fileSize: 1000000,
@@ -65,12 +66,22 @@ const upload = multer({
       cb(new Error("Upload a .jpg, .jpeg, or .png file"));
     cb(undefined, true);
   },
+  storage,
 });
 
 router.post(
   "/users/me/avatar",
+  auth,
   upload.single("avatar"),
-  (req, res) => {
+  async (req, res) => {
+    // we remove dest from const upload so multer file is directly passed here
+    // we use sharp to convert image to png and resize it
+    const buffer = await sharp(req.file.buffer)
+      .resize({ width: 250, height: 250 })
+      .png()
+      .toBuffer();
+    req.user.avatar = buffer;
+    await req.user.save();
     res.send();
   },
   (error, req, res, next) => {
@@ -80,6 +91,20 @@ router.post(
 
 router.get("/users/me", auth, async (req, res) => {
   res.send(req.user);
+});
+
+router.get("/users/:id/avatar", async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user || !user.avatar) throw new Error();
+
+    // this is set automatically to application/json so we didn't need to type it previously
+    res.set("Content-Type", "image/png");
+    res.send(user.avatar);
+  } catch (e) {
+    res.status(404).send();
+  }
 });
 
 router.patch("/users/me", auth, async (req, res) => {
@@ -114,6 +139,16 @@ router.patch("/users/me", auth, async (req, res) => {
 router.delete("/users/me", auth, async (req, res) => {
   try {
     await req.user.remove();
+    return res.send(req.user);
+  } catch (e) {
+    res.status(500).send();
+  }
+});
+
+router.delete("/users/me/avatar", auth, async (req, res) => {
+  try {
+    req.user.avatar = undefined;
+    await req.user.save();
     return res.send(req.user);
   } catch (e) {
     res.status(500).send();

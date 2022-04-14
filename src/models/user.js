@@ -51,6 +51,9 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
+    avatar: {
+      type: Buffer,
+    },
   },
   {
     timestamps: true,
@@ -73,6 +76,8 @@ userSchema.methods.toJSON = function () {
   // hiding private data by not passing it to client
   delete userObject.password;
   delete userObject.tokens;
+  // it's a big object no need to pass it every time to client
+  delete userObject.avatar;
 
   return userObject;
 };
