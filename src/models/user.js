@@ -87,7 +87,7 @@ userSchema.methods.toJSON = function () {
 userSchema.methods.generateAuthToken = async function () {
   const user = this;
 
-  const token = jwt.sign({ _id: user._id.toString() }, "secretkey", {
+  const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET, {
     expiresIn: "1 hour",
   });
 
@@ -95,9 +95,6 @@ userSchema.methods.generateAuthToken = async function () {
   await user.save();
 
   return token;
-
-  const data = jwt.verify(token, "secretkey");
-  console.log(data);
 };
 
 // custom login check

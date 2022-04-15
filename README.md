@@ -15,5 +15,15 @@ C:\Users\Kai\MongoDB\bin> .\mongod.exe --dbpath="C:\Users\Kai\MongoDB-Data"
 To run local queries:
 
 ```
-node mongodb.js
+npm run start
 ```
+
+```
+npm run dev
+```
+
+## Issues
+
+- ### SendGrid Implementation:
+
+  Could not create an account, and do not want to start free trials with Mailgun. Leaving this for the time being.
